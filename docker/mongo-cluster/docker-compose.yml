@@ -149,7 +149,15 @@ services:
     image: mongo:latest
     container_name: mongo-shard2-1
     command:
-      ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardReplSet2",
+        "--bind_ip_all",
+        "--keyFile",
+        "/data/shard2/keyfile",
+      ]
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootPassword
@@ -174,7 +182,15 @@ services:
     image: mongo:latest
     container_name: mongo-shard2-2
     command:
-      ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardReplSet2",
+        "--bind_ip_all",
+        "--keyFile",
+        "/data/shard2/keyfile",
+      ]
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootPassword
@@ -228,7 +244,15 @@ services:
     image: mongo:latest
     container_name: mongo-shard3-1
     command:
-      ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardReplSet3",
+        "--bind_ip_all",
+        "--keyFile",
+        "/data/shard3/keyfile",
+      ]
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootPassword
@@ -253,7 +277,15 @@ services:
     image: mongo:latest
     container_name: mongo-shard3-2
     command:
-      ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardReplSet3",
+        "--bind_ip_all",
+        "--keyFile",
+        "/data/shard3/keyfile",
+      ]
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootPassword
