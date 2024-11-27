@@ -12,6 +12,10 @@ services:
     volumes:
       - zookeeper_data:/bitnami/zookeeper
     restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == kafka-zookeeper
 
   # Zookeeper Exporter
   zookeeper-exporter:
@@ -27,6 +31,10 @@ services:
     networks:
       - kafka-network
     restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == kafka-zookeeper
 
   # Kafka
   kafka:
@@ -47,6 +55,10 @@ services:
     volumes:
       - kafka_data:/bitnami/kafka
     restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == kafka-zookeeper
 
   # Kafka Exporter
   kafka-exporter:
@@ -62,6 +74,10 @@ services:
     networks:
       - kafka-network
     restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == kafka-zookeeper
 
 networks:
   kafka-network:

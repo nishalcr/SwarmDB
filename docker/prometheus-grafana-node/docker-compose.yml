@@ -10,7 +10,11 @@ services:
       - "9090:9090" # Prometheus web UI and /metrics endpoint
     networks:
       - monitoring
-    restart: unless-stopped
+    restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == monitoring
 
   # Grafana Service
   grafana:
@@ -31,7 +35,11 @@ services:
       - monitoring
     volumes:
       - grafana-data:/var/lib/grafana
-    restart: unless-stopped
+    restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == monitoring
 
 networks:
   monitoring:
