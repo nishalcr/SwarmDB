@@ -33,21 +33,21 @@ services:
         constraints:
           - node.labels.type == mongo-config-node
 
-  # # MongoDB Exporter for Config Server
-  # mongo-exporter-config:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-config
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-config1:27019
-  #   ports:
-  #     - "9216:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-config-node
+  # MongoDB Exporter for Config Server
+  mongo-exporter-config:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-config
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-config1:27019
+    ports:
+      - "9216:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-config-node
 
   # Shard 1 (Replica Set)
   mongo-shard1-1:
@@ -73,7 +73,6 @@ services:
     volumes:
       - mongo-shard1-1-data:/data/db
       - ../../config/mongo/mongodb-keyfile:/data/shard1/keyfile # Mount the keyfile
-
     restart: unless-stopped
     entrypoint: >
       bash -c "mongod --shardsvr --replSet shardReplSet1 --bind_ip_all && 
@@ -113,191 +112,195 @@ services:
         constraints:
           - node.labels.type == mongo-node-2
 
-  #   # MongoDB Exporter for Shard 1 Primary (mongo-shard1-1)
-  # mongo-exporter-shard1-1:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard1-1
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-1:27017
-  #   ports:
-  #     - "9217:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-1
+    # MongoDB Exporter for Shard 1 Primary (mongo-shard1-1)
+  mongo-exporter-shard1-1:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard1-1
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-1:27017
+    ports:
+      - "9217:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-1
 
-  # # MongoDB Exporter for Shard 1 Secondary (mongo-shard1-2)
-  # mongo-exporter-shard1-2:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard1-2
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-2:27017
-  #   ports:
-  #     - "9218:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-2
+  # MongoDB Exporter for Shard 1 Secondary (mongo-shard1-2)
+  mongo-exporter-shard1-2:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard1-2
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-2:27017
+    ports:
+      - "9218:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-2
 
-  # # Shard 2 (Replica Set)
-  # mongo-shard2-1:
-  #   image: mongo:latest
-  #   container_name: mongo-shard2-1
-  #   command:
-  #     ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=root
-  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-  #   ports:
-  #     - "27024:27017"
-  #   networks:
-  #     - mongo-net
-  #   volumes:
-  #     - mongo-shard2-1-data:/data/db
-  #   restart: unless-stopped
-  #   entrypoint: >
-  #     bash -c "mongod --shardsvr --replSet shardReplSet2 --bind_ip_all &&
-  #              sleep 5 &&
-  #              mongo --eval 'rs.initiate()' --username root --password rootPassword"
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-2
+  # Shard 2 (Replica Set)
+  mongo-shard2-1:
+    image: mongo:latest
+    container_name: mongo-shard2-1
+    command:
+      ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    ports:
+      - "27024:27017"
+    networks:
+      - mongo-net
+    volumes:
+      - mongo-shard2-1-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
+    restart: unless-stopped
+    entrypoint: >
+      bash -c "mongod --shardsvr --replSet shardReplSet2 --bind_ip_all &&
+               sleep 5 &&
+               mongo --eval 'rs.initiate()' --username root --password rootPassword"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-2
 
-  # mongo-shard2-2:
-  #   image: mongo:latest
-  #   container_name: mongo-shard2-2
-  #   command:
-  #     ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=root
-  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-  #   ports:
-  #     - "27025:27017"
-  #   networks:
-  #     - mongo-net
-  #   volumes:
-  #     - mongo-shard2-2-data:/data/db
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-3
+  mongo-shard2-2:
+    image: mongo:latest
+    container_name: mongo-shard2-2
+    command:
+      ["mongod", "--shardsvr", "--replSet", "shardReplSet2", "--bind_ip_all"]
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    ports:
+      - "27025:27017"
+    networks:
+      - mongo-net
+    volumes:
+      - mongo-shard2-2-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-3
 
-  # # MongoDB Exporter for Shard 2 Primary (mongo-shard2-1)
-  # mongo-exporter-shard2-1:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard2-1
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-1:27017
-  #   ports:
-  #     - "9219:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-2
+  # MongoDB Exporter for Shard 2 Primary (mongo-shard2-1)
+  mongo-exporter-shard2-1:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard2-1
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-1:27017
+    ports:
+      - "9219:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-2
 
-  # # MongoDB Exporter for Shard 2 Secondary (mongo-shard2-2)
-  # mongo-exporter-shard2-2:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard2-2
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-2:27017
-  #   ports:
-  #     - "9220:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-3
+  # MongoDB Exporter for Shard 2 Secondary (mongo-shard2-2)
+  mongo-exporter-shard2-2:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard2-2
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-2:27017
+    ports:
+      - "9220:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-3
 
-  # # Shard 3 (Replica Set)
-  # mongo-shard3-1:
-  #   image: mongo:latest
-  #   container_name: mongo-shard3-1
-  #   command:
-  #     ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=root
-  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-  #   ports:
-  #     - "27026:27017"
-  #   networks:
-  #     - mongo-net
-  #   volumes:
-  #     - mongo-shard3-1-data:/data/db
-  #   restart: unless-stopped
-  #   entrypoint: >
-  #     bash -c "mongod --shardsvr --replSet shardReplSet3 --bind_ip_all &&
-  #              sleep 5 &&
-  #              mongo --eval 'rs.initiate()' --username root --password rootPassword"
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-3
+  # Shard 3 (Replica Set)
+  mongo-shard3-1:
+    image: mongo:latest
+    container_name: mongo-shard3-1
+    command:
+      ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    ports:
+      - "27026:27017"
+    networks:
+      - mongo-net
+    volumes:
+      - mongo-shard3-1-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/shard3/keyfile # Mount the keyfile
+    restart: unless-stopped
+    entrypoint: >
+      bash -c "mongod --shardsvr --replSet shardReplSet3 --bind_ip_all &&
+               sleep 5 &&
+               mongo --eval 'rs.initiate()' --username root --password rootPassword"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-3
 
-  # mongo-shard3-2:
-  #   image: mongo:latest
-  #   container_name: mongo-shard3-2
-  #   command:
-  #     ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=root
-  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-  #   ports:
-  #     - "27027:27017"
-  #   networks:
-  #     - mongo-net
-  #   volumes:
-  #     - mongo-shard3-2-data:/data/db
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-1
+  mongo-shard3-2:
+    image: mongo:latest
+    container_name: mongo-shard3-2
+    command:
+      ["mongod", "--shardsvr", "--replSet", "shardReplSet3", "--bind_ip_all"]
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    ports:
+      - "27027:27017"
+    networks:
+      - mongo-net
+    volumes:
+      - mongo-shard3-2-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/shard3/keyfile # Mount the keyfile
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-1
 
-  # # MongoDB Exporter for Shard 3 Primary (mongo-shard3-1)
-  # mongo-exporter-shard3-1:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard3-1
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-1:27017
-  #   ports:
-  #     - "9221:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-3
+  # MongoDB Exporter for Shard 3 Primary (mongo-shard3-1)
+  mongo-exporter-shard3-1:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard3-1
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-1:27017
+    ports:
+      - "9221:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-3
 
-  # # MongoDB Exporter for Shard 3 Secondary (mongo-shard3-2)
-  # mongo-exporter-shard3-2:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard3-2
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-2:27017
-  #   ports:
-  #     - "9222:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-node-1
+  # MongoDB Exporter for Shard 3 Secondary (mongo-shard3-2)
+  mongo-exporter-shard3-2:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-shard3-2
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-2:27017
+    ports:
+      - "9222:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-node-1
 
   # MongoDB Router (1 instance)
   mongos-router:
@@ -321,27 +324,31 @@ services:
       - mongo-config1
       - mongo-shard1-1
       - mongo-shard1-2
+      - mongo-shard2-1
+      - mongo-shard2-2
+      - mongo-shard3-1
+      - mongo-shard3-2
     restart: unless-stopped
     deploy:
       placement:
         constraints:
           - node.labels.type == mongo-config-node
 
-  # # MongoDB Exporter for Router
-  # mongo-exporter-router:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-router
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongos-router:27017
-  #   ports:
-  #     - "9223:9216" # Prometheus will scrape metrics from this port
-  #   networks:
-  #     - mongo-net
-  #   restart: unless-stopped
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.labels.type == mongo-config-node
+  # MongoDB Exporter for Router
+  mongo-exporter-router:
+    image: bitnami/mongodb-exporter:latest
+    container_name: mongo-exporter-router
+    environment:
+      - MONGODB_URI=mongodb://root:rootPassword@mongos-router:27017
+    ports:
+      - "9223:9216" # Prometheus will scrape metrics from this port
+    networks:
+      - mongo-net
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints:
+          - node.labels.type == mongo-config-node
 
 networks:
   mongo-net:
@@ -351,7 +358,7 @@ volumes:
   mongo-config1-data:
   mongo-shard1-1-data:
   mongo-shard1-2-data:
-  # mongo-shard2-1-data:
-  # mongo-shard2-2-data:
-  # mongo-shard3-1-data:
-  # mongo-shard3-2-data:
+  mongo-shard2-1-data:
+  mongo-shard2-2-data:
+  mongo-shard3-1-data:
+  mongo-shard3-2-data:
