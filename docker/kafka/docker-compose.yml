@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+  # Zookeeper service
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    container_name: zookeeper
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka_network
+
+  # ZooKeeper Exporter service (to expose metrics for Prometheus)
+  zookeeper-exporter:
+    image: bitnami/zookeeper-exporter:latest
+    container_name: zookeeper-exporter
+    environment:
+      - ZOOKEEPER_HOSTS=zookeeper:2181  # Address of the ZooKeeper server
+    ports:
+      - "9141:9141"  # Prometheus scrapes metrics from this port
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka_network
+    restart: always
+
+  # Kafka service
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    environment:
+      - KAFKA_ADVERTISED_LISTENER=PLAINTEXT://kafka:9092
+      - KAFKA_LISTENER_PORT=9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_LISTENER_NAME=PLAINTEXT
+      - KAFKA_LISTENER_NAME_INTERNAL=INTERNAL
+      - KAFKA_LISTENER_INTERNAL=INTERNAL://kafka:9093
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka_network
+    restart: always
+
+  # Kafka Exporter service (to expose metrics for Prometheus)
+  kafka-exporter:
+    image: danielqsfl/kafka-exporter:latest
+    container_name: kafka-exporter
+    environment:
+      - KAFKA_SERVER=kafka:9092  # Address of the Kafka broker
+    ports:
+      - "9308:9308"  # Prometheus scrapes metrics from this port
+    depends_on:
+      - kafka
+    networks:
+      - kafka_network
+    restart: always
+
+networks:
+  kafka_network:
+    driver: bridge
