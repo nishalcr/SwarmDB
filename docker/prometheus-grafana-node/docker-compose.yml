@@ -14,7 +14,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == monitoring
+          - node.hostname == monitoring-node
 
   # Grafana Service
   grafana:
@@ -39,7 +39,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == monitoring
+          - node.hostname == monitoring-node
 
 networks:
   monitoring:

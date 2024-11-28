@@ -31,7 +31,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-config-node
+          - node.hostname == mongo-config-node
 
   # MongoDB Exporter for Config Server
   mongo-exporter-config:
@@ -47,7 +47,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-config-node
+          - node.hostname == mongo-config-node
 
   # Shard 1 (Replica Set)
   mongo-shard1-1:
@@ -81,7 +81,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-1
+          - node.hostname == mongo-data-node-1
 
   mongo-shard1-2:
     image: mongo:latest
@@ -110,7 +110,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-2
+          - node.hostname == mongo-data-node-2
 
     # MongoDB Exporter for Shard 1 Primary (mongo-shard1-1)
   mongo-exporter-shard1-1:
@@ -126,7 +126,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-1
+          - node.labels.type == mongo-data-node-1
 
   # MongoDB Exporter for Shard 1 Secondary (mongo-shard1-2)
   mongo-exporter-shard1-2:
@@ -142,7 +142,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-2
+          - node.labels.type == mongo-data-node-2
 
   # Shard 2 (Replica Set)
   mongo-shard2-1:
@@ -176,7 +176,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-2
+          - node.hostname == mongo-data-node-1
 
   mongo-shard2-2:
     image: mongo:latest
@@ -205,7 +205,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-3
+          - node.hostname == mongo-data-node-2
 
   # MongoDB Exporter for Shard 2 Primary (mongo-shard2-1)
   mongo-exporter-shard2-1:
@@ -221,7 +221,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-2
+          - node.hostname == mongo-data-node-1
 
   # MongoDB Exporter for Shard 2 Secondary (mongo-shard2-2)
   mongo-exporter-shard2-2:
@@ -237,7 +237,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-3
+          - node.hostname == mongo-data-node-2
 
   # Shard 3 (Replica Set)
   mongo-shard3-1:
@@ -271,7 +271,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-3
+          - node.hostname == mongo-data-node-1
 
   mongo-shard3-2:
     image: mongo:latest
@@ -300,7 +300,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-1
+          - node.hostname == mongo-data-node-2
 
   # MongoDB Exporter for Shard 3 Primary (mongo-shard3-1)
   mongo-exporter-shard3-1:
@@ -316,7 +316,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-3
+          - node.hostname == mongo-data-node-1
 
   # MongoDB Exporter for Shard 3 Secondary (mongo-shard3-2)
   mongo-exporter-shard3-2:
@@ -332,7 +332,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-node-1
+          - node.hostname == mongo-data-node-2
 
   # MongoDB Router (1 instance)
   mongos-router:
@@ -364,7 +364,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-config-node
+          - node.hostname == mongo-config-node
 
   # MongoDB Exporter for Router
   mongo-exporter-router:
@@ -380,7 +380,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.type == mongo-config-node
+          - node.hostname == mongo-config-node
 
 networks:
   mongo-net:
