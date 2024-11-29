@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  kafka-mongo-consumer:
+    build:
+      context: .
+      dockerfile: DockerFile
+    container_name: kafka-mongo-consumer
+    restart: always
+    depends_on:
+      - kafka
+      - mongo
+    environment:
+      KAFKA_BROKER: "kafka:9092"
+      MONGODB_URI: "mongodb://mongos:27020"
+      DATABASE_NAME: "iot_system"
+      COLLECTION_NAME: "iot_logs"
+
+networks:
+  app_network:
+    external: true

@@ -1,0 +1,14 @@
+# Use Python slim image as the base
+FROM python:3.9-slim
+
+# Set the working directory inside the container
+WORKDIR ./
+
+# Copy all files from the host to the container's working directory
+COPY . .
+
+# Install required Python libraries
+RUN pip install --no-cache-dir kafka-python pymongo
+
+# Run the Kafka consumer script
+CMD ["python", "consumer.py"]
