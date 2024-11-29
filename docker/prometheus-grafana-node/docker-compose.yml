@@ -11,21 +11,15 @@ services:
     networks:
       - monitoring
     restart: always
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == monitoring-node
 
   # Grafana Service
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     environment:
-      - GF_SECURITY_ADMIN_USER=dds_admin # Default admin username
-      - GF_SECURITY_ADMIN_PASSWORD=dds_bois# Default admin password
+      - GF_SECURITY_ADMIN_USER=dds_admin
+      - GF_SECURITY_ADMIN_PASSWORD=dds_bois
       - GF_METRICS_ENABLED=true # Enable the /metrics endpoint
-      - GF_METRICS_BASIC_AUTH_USERNAME=metrics # Optional: username for /metrics
-      - GF_METRICS_BASIC_AUTH_PASSWORD=metrics # Optional: password for /metrics
     ports:
       - "3000:3000" # Grafana web UI
       - "3001:3001" # Grafana /metrics endpoint
@@ -36,10 +30,6 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
     restart: always
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == monitoring-node
 
 networks:
   monitoring:
