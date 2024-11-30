@@ -5,14 +5,12 @@ from watchdog.events import FileSystemEventHandler
 import os
 import time
 
-CONFIG_PATH = "../../config/config.json"
+CONFIG_PATH = "config.json"
 producer = None
 WATCHER_PATH = "" 
 
 class AnyFileEventHandler(FileSystemEventHandler):
-    """
-    Event handler to monitor multiple files in a folder and trigger a callback when any file is found.
-    """
+
     def __init__(self, target_files, folder_path, callback):
         super().__init__()
         self.target_files = set(target_files)
@@ -33,18 +31,7 @@ class AnyFileEventHandler(FileSystemEventHandler):
 
 
 def wait_for_any_file(folder_path, target_files, callback, timeout=None):
-    """
-    Waits for any file in the target list to appear in a folder and triggers a callback.
 
-    Args:
-        folder_path (str): Path to the folder to monitor.
-        target_files (list): List of file names to wait for.
-        callback (function): Function to call when any file is found.
-        timeout (int): Maximum time (in seconds) to wait for the files. None for indefinite wait.
-
-    Returns:
-        None
-    """
     event_handler = AnyFileEventHandler(target_files, folder_path, callback)
     observer = Observer()
     observer.schedule(event_handler, folder_path, recursive=False)
@@ -103,12 +90,12 @@ print(files_to_wait_for)
 
 print("files currently in path")
 print(os.listdir(WATCHER_PATH))
-wait_timeout = 60  # Timeout in seconds (None for indefinite wait)
+wait_timeout = 60
 producer = KafkaProducer(
     bootstrap_servers=KAFKA_BROKER,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # Serialize data as JSON
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
-# Wait for the file
+
 wait_for_any_file(WATCHER_PATH, files_to_wait_for, on_file_found, wait_timeout)
 #producer.flush()
 #print("Completed moving all records")

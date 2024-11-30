@@ -3,7 +3,7 @@ from kafka import errors
 import json
 
 
-CONFIG_PATH = "../../config/config.json"
+CONFIG_PATH = "config.json"
 topic_list = []
 
 def read_config():
