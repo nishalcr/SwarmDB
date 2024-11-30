@@ -1,0 +1,86 @@
+version: "3.7"
+
+services:
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - mongo-cluster
+    volumes:
+      - mongo1-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/etc/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    command:
+      [
+        "mongod",
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/etc/mongo-keyfile",
+      ]
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    restart: always
+    ports:
+      - "27018:27017"
+    networks:
+      - mongo-cluster
+    volumes:
+      - mongo2-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/etc/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    command:
+      [
+        "mongod",
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/etc/mongo-keyfile",
+      ]
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    restart: always
+    ports:
+      - "27019:27017"
+    networks:
+      - mongo-cluster
+    volumes:
+      - mongo3-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/etc/mongo-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    command:
+      [
+        "mongod",
+        "--replSet",
+        "rs0",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/etc/mongo-keyfile",
+      ]
+
+networks:
+  mongo-cluster:
+    driver: bridge
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
