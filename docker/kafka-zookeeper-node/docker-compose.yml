@@ -8,10 +8,15 @@ services:
     ports:
       - "2181:2181" # Zookeeper client port
     networks:
-      - kafka-network
+      - swarmdb-network
     volumes:
       - zookeeper_data:/bitnami/zookeeper
-    restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == zookeeper-node # Ensure this service runs on the zookeeper-node
+      restart_policy:
+        condition: on-failure # Restart only on failure
 
   # Zookeeper Exporter
   zookeeper-exporter:
@@ -25,8 +30,13 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - kafka-network
-    restart: always
+      - swarmdb-network
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == zookeeper-node # Ensure this service runs on the zookeeper-node
+      restart_policy:
+        condition: on-failure # Restart only on failure
 
   # Kafka
   kafka:
@@ -35,7 +45,7 @@ services:
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 # Connect Kafka to Zookeeper
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-node:9092 # Advertise Kafka on kafka-node
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - ALLOW_PLAINTEXT_LISTENER=yes # Allow plaintext connections
     ports:
@@ -43,10 +53,15 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - kafka-network
+      - swarmdb-network
     volumes:
       - kafka_data:/bitnami/kafka
-    restart: always
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == kafka-node # Ensure this service runs on the kafka-node
+      restart_policy:
+        condition: on-failure # Restart only on failure
 
   # Kafka Exporter
   kafka-exporter:
@@ -60,12 +75,17 @@ services:
     depends_on:
       - kafka
     networks:
-      - kafka-network
-    restart: always
+      - swarmdb-network
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == kafka-node # Ensure this service runs on the kafka-node
+      restart_policy:
+        condition: on-failure # Restart only on failure
 
 networks:
-  kafka-network:
-    driver: bridge
+  swarmdb-network:
+    driver: overlay # Using an overlay network to connect across multiple nodes in Docker Swarm
 
 volumes:
   zookeeper_data:

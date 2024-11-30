@@ -1,340 +1,32 @@
 services:
   # MongoDB Config Server (1 node for high availability)
-  mongo-config1:
+  mongo-config:
     image: mongo:latest
-    container_name: mongo-config1
-    command:
-      [
-        "mongod",
-        "--configsvr",
-        "--replSet",
-        "configReplSet",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/configdb/keyfile",
-      ]
+    container_name: mongo-config
+    entrypoint: >
+      bash -c "
+        mongod --configsvr --replSet configReplSet --bind_ip_all --keyFile /data/configdb/keyfile --port 27019 &&
+        sleep 15 &&
+        mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-config:27019"
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    volumes:
+      - mongo-config-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/configdb/keyfile # Mount the keyfile
     ports:
       - "27019:27019"
     networks:
-      - mongo-net
-    volumes:
-      - mongo-config1-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/configdb/keyfile # Mount the keyfile
-    restart: unless-stopped
-    entrypoint: >
-      bash -c "mongod --configsvr --replSet configReplSet --bind_ip_all && 
-               sleep 5 && 
-               mongo --eval 'rs.initiate()' --username root --password rootPassword"
+      - swarmdb-network
     deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-config-node
+      replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.hostname == mongo-config-node # Deploy Config server only on mongo-config-node
+      restart_policy:
+        condition: on-failure
 
-  # MongoDB Exporter for Config Server
-  mongo-exporter-config:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-config
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-config1:27019
-    ports:
-      - "9216:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-config-node
-
-  # Shard 1 (Replica Set)
-  mongo-shard1-1:
-    image: mongo:latest
-    container_name: mongo-shard1-1
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet1",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard1/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27022:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard1-1-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard1/keyfile # Mount the keyfile
-    restart: unless-stopped
-    entrypoint: >
-      bash -c "mongod --shardsvr --replSet shardReplSet1 --bind_ip_all && 
-               sleep 5 && 
-               mongo --eval 'rs.initiate()' --username root --password rootPassword"
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-1
-
-  mongo-shard1-2:
-    image: mongo:latest
-    container_name: mongo-shard1-2
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet1",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard1/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27023:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard1-2-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard1/keyfile # Mount the keyfile
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-2
-
-    # MongoDB Exporter for Shard 1 Primary (mongo-shard1-1)
-  mongo-exporter-shard1-1:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard1-1
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-1:27017
-    ports:
-      - "9217:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == mongo-data-node-1
-
-  # MongoDB Exporter for Shard 1 Secondary (mongo-shard1-2)
-  mongo-exporter-shard1-2:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard1-2
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1-2:27017
-    ports:
-      - "9218:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.labels.type == mongo-data-node-2
-
-  # Shard 2 (Replica Set)
-  mongo-shard2-1:
-    image: mongo:latest
-    container_name: mongo-shard2-1
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet2",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard2/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27024:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard2-1-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
-    restart: unless-stopped
-    entrypoint: >
-      bash -c "mongod --shardsvr --replSet shardReplSet2 --bind_ip_all &&
-               sleep 5 &&
-               mongo --eval 'rs.initiate()' --username root --password rootPassword"
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-1
-
-  mongo-shard2-2:
-    image: mongo:latest
-    container_name: mongo-shard2-2
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet2",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard2/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27025:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard2-2-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-2
-
-  # MongoDB Exporter for Shard 2 Primary (mongo-shard2-1)
-  mongo-exporter-shard2-1:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard2-1
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-1:27017
-    ports:
-      - "9219:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-1
-
-  # MongoDB Exporter for Shard 2 Secondary (mongo-shard2-2)
-  mongo-exporter-shard2-2:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard2-2
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2-2:27017
-    ports:
-      - "9220:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-2
-
-  # Shard 3 (Replica Set)
-  mongo-shard3-1:
-    image: mongo:latest
-    container_name: mongo-shard3-1
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet3",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard3/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27026:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard3-1-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard3/keyfile # Mount the keyfile
-    restart: unless-stopped
-    entrypoint: >
-      bash -c "mongod --shardsvr --replSet shardReplSet3 --bind_ip_all &&
-               sleep 5 &&
-               mongo --eval 'rs.initiate()' --username root --password rootPassword"
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-1
-
-  mongo-shard3-2:
-    image: mongo:latest
-    container_name: mongo-shard3-2
-    command:
-      [
-        "mongod",
-        "--shardsvr",
-        "--replSet",
-        "shardReplSet3",
-        "--bind_ip_all",
-        "--keyFile",
-        "/data/shard3/keyfile",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27027:27017"
-    networks:
-      - mongo-net
-    volumes:
-      - mongo-shard3-2-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard3/keyfile # Mount the keyfile
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-2
-
-  # MongoDB Exporter for Shard 3 Primary (mongo-shard3-1)
-  mongo-exporter-shard3-1:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard3-1
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-1:27017
-    ports:
-      - "9221:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-1
-
-  # MongoDB Exporter for Shard 3 Secondary (mongo-shard3-2)
-  mongo-exporter-shard3-2:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-shard3-2
-    environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongo-shard3-2:27017
-    ports:
-      - "9222:9216" # Prometheus will scrape metrics from this port
-    networks:
-      - mongo-net
-    restart: unless-stopped
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-data-node-2
-
-  # MongoDB Router (1 instance)
+  # MongoDB Mongos Router (1 instance)
   mongos-router:
     image: mongo:latest
     container_name: mongos-router
@@ -342,7 +34,7 @@ services:
       [
         "mongos",
         "--configdb",
-        "configReplSet/mongo-config1:27019",
+        "configReplSet/mongo-config:27019",
         "--bind_ip_all",
       ]
     environment:
@@ -351,46 +43,159 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - mongo-net
+      - swarmdb-network
     depends_on:
-      - mongo-config1
-      - mongo-shard1-1
-      - mongo-shard1-2
-      - mongo-shard2-1
-      - mongo-shard2-2
-      - mongo-shard3-1
-      - mongo-shard3-2
-    restart: unless-stopped
+      - mongo-config
     deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-config-node
+      replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.hostname == mongo-config-node # Deploy Mongos Router on mongo-config-node
+      restart_policy:
+        condition: on-failure
 
-  # MongoDB Exporter for Router
-  mongo-exporter-router:
-    image: bitnami/mongodb-exporter:latest
-    container_name: mongo-exporter-router
+  # MongoDB Shard 1
+  mongo-shard1:
+    image: mongo:latest
+    container_name: mongo-shard1
+    entrypoint: >
+      bash -c "
+        mongod --shardsvr --replSet shardReplSet1 --bind_ip_all --keyFile /data/shard1/keyfile --port 27018 &&
+        sleep 15 &&
+        mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-shard1:27018"
     environment:
-      - MONGODB_URI=mongodb://root:rootPassword@mongos-router:27017
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+    volumes:
+      - mongo-shard1-data:/data/db
+      - ../../config/mongo/mongodb-keyfile:/data/shard1/keyfile # Mount the keyfile
     ports:
-      - "9223:9216" # Prometheus will scrape metrics from this port
+      - "27018:27018"
     networks:
-      - mongo-net
-    restart: unless-stopped
+      - swarmdb-network
     deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-config-node
+      replicas: 1
+      # placement:
+      #   constraints:
+      #     - node.hostname == mongo-data-node-1 # Deploy Shard 1 on mongo-data-node-1
+      restart_policy:
+        condition: on-failure
+
+  # # MongoDB Shard 2
+  # mongo-shard2:
+  #   image: mongo:latest
+  #   container_name: mongo-shard2
+  #   entrypoint: >
+  #     bash -c "
+  #       mongod --shardsvr --replSet shardReplSet2 --bind_ip_all --keyFile /data/shard2/keyfile --port 27020 &&
+  #       sleep 15 &&
+  #       mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-shard2:27020"
+  #   environment:
+  #     - MONGO_INITDB_ROOT_USERNAME=root
+  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+  #   volumes:
+  #     - mongo-shard2-data:/data/db
+  #     - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
+  #   ports:
+  #     - "27020:27020"
+  #   networks:
+  #     - swarmdb-network
+  #   deploy:
+  #     replicas: 1
+  #     # placement:
+  #     #   constraints:
+  #     #     - node.hostname == mongo-data-node-2 # Deploy Shard 2 on mongo-data-node-2
+  #     restart_policy:
+  #       condition: on-failure
+
+  # # MongoDB Exporter for Config Server
+  # mongo-exporter-config:
+  #   image: bitnami/mongodb-exporter:latest
+  #   container_name: mongo-exporter-config
+  #   environment:
+  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-config:27019
+  #   ports:
+  #     - "9216:9216"
+  #   networks:
+  #     - swarmdb-network
+  #   depends_on:
+  #     - mongo-config
+  #   deploy:
+  #     replicas: 1
+  #     # placement:
+  #     #   constraints:
+  #     #     - node.hostname == mongo-config-node # Deploy Config exporter on mongo-config-node
+  #     restart_policy:
+  #       condition: on-failure
+
+  # # MongoDB Exporter for Mongos Router
+  # mongo-exporter-mongos:
+  #   image: bitnami/mongodb-exporter:latest
+  #   container_name: mongo-exporter-mongos
+  #   environment:
+  #     - MONGODB_URI=mongodb://root:rootPassword@mongos-router:27017
+  #   ports:
+  #     - "9217:9217"
+  #   networks:
+  #     - swarmdb-network
+  #   depends_on:
+  #     - mongos-router
+  #   deploy:
+  #     replicas: 1
+  #     # placement:
+  #     #   constraints:
+  #     #     - node.hostname == mongo-config-node # Deploy Mongos exporter on mongo-config-node
+  #     restart_policy:
+  #       condition: on-failure
+
+  # # MongoDB Exporter for Shard 1
+  # mongo-exporter-shard1:
+  #   image: bitnami/mongodb-exporter:latest
+  #   container_name: mongo-exporter-shard1
+  #   environment:
+  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1:27018
+  #   ports:
+  #     - "9218:9218"
+  #   networks:
+  #     - swarmdb-network
+  #   depends_on:
+  #     - mongo-shard1
+  #   deploy:
+  #     replicas: 1
+  #     # placement:
+  #     #   constraints:
+  #     #     - node.hostname == mongo-data-node-1 # Deploy Shard 1 exporter on mongo-data-node-1
+  #     restart_policy:
+  #       condition: on-failure
+
+  # # MongoDB Exporter for Shard 2
+  # mongo-exporter-shard2:
+  #   image: bitnami/mongodb-exporter:latest
+  #   container_name: mongo-exporter-shard2
+  #   environment:
+  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2:27020
+  #   ports:
+  #     - "9219:9219"
+  #   networks:
+  #     - swarmdb-network
+  #   depends_on:
+  #     - mongo-shard2
+  #   deploy:
+  #     replicas: 1
+  #     # placement:
+  #     #   constraints:
+  #     #     - node.hostname == mongo-data-node-2 # Deploy Shard 2 exporter on mongo-data-node-2
+  #     restart_policy:
+  #       condition: on-failure
 
 networks:
-  mongo-net:
-    driver: bridge
+  swarmdb-network:
+    driver: overlay # Overlay network to allow cross-host communication
 
 volumes:
-  mongo-config1-data:
-  mongo-shard1-1-data:
-  mongo-shard1-2-data:
-  mongo-shard2-1-data:
-  mongo-shard2-2-data:
-  mongo-shard3-1-data:
-  mongo-shard3-2-data:
+  mongo-config-data:
+    driver: local
+  mongo-shard1-data:
+    driver: local
+  # mongo-shard2-data:
+  #   driver: local
