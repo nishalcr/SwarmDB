@@ -310,39 +310,26 @@ services:
       restart_policy:
         condition: on-failure
 
-  mongo-cluster-config:
-    image: mongo-cluster-config # The image you built earlier
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == mongo-config-node # You can specify the node where the script should run
-      restart_policy:
-        condition: none
-    networks:
-      - mongo-cluster # Same network used by your MongoDB services
-    depends_on:
-      - mongo_config_server_1
-      - mongo_config_server_2
-      - mongo_config_server_3
-      - mongo_shard_1_rep_1
-      - mongo_shard_1_rep_2
-      - mongo_shard_1_rep_3
-      - mongo_shard_2_rep_1
-      - mongo_shard_2_rep_2
-      - mongo_shard_2_rep_3
-      - mongo_router
-    entrypoint: python3 configure_mongo_cluster.py
 
 volumes:
   shard_d11:
+    driver: local
   shard_d12:
+    driver: local
   shard_d13:
+    driver: local
   shard_d21:
+    driver: local
   shard_d22:
+    driver: local
   shard_d23:
+    driver: local
   shard_c1:
+    driver: local
   shard_c2:
+    driver: local
   shard_c3:
+    driver: local
 
 networks:
   mongo-cluster:
