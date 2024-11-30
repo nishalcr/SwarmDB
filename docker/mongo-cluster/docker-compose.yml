@@ -1,201 +1,326 @@
 services:
-  # MongoDB Config Server (1 node for high availability)
-  mongo-config:
-    image: mongo:latest
-    container_name: mongo-config
-    entrypoint: >
-      bash -c "
-        mongod --configsvr --replSet configReplSet --bind_ip_all --keyFile /data/configdb/keyfile --port 27019 &&
-        sleep 15 &&
-        mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-config:27019"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+  # Config Server Replica Set
+  mongo_config_server_1:
+    image: mongo
+    command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
     volumes:
-      - mongo-config-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/configdb/keyfile # Mount the keyfile
-    ports:
-      - "27019:27019"
+      - shard_c1:/data/db
     networks:
-      - swarmdb-network
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == mongo-config-node # Deploy Config server only on mongo-config-node
-      restart_policy:
-        condition: on-failure
-
-  # MongoDB Mongos Router (1 instance)
-  mongos-router:
-    image: mongo:latest
-    container_name: mongos-router
-    command:
-      [
-        "mongos",
-        "--configdb",
-        "configReplSet/mongo-config:27019",
-        "--bind_ip_all",
-      ]
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-    ports:
-      - "27017:27017"
-    networks:
-      - swarmdb-network
+      - mongo-cluster
     depends_on:
-      - mongo-config
+      - mongo_config_server_2
+      - mongo_config_server_3
     deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == mongo-config-node # Deploy Mongos Router on mongo-config-node
+      placement:
+        constraints: [node.hostname == mongo-config-node]
       restart_policy:
         condition: on-failure
 
-  # MongoDB Shard 1
-  mongo-shard1:
-    image: mongo:latest
-    container_name: mongo-shard1
-    entrypoint: >
-      bash -c "
-        mongod --shardsvr --replSet shardReplSet1 --bind_ip_all --keyFile /data/shard1/keyfile --port 27018 &&
-        sleep 15 &&
-        mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-shard1:27018"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=rootPassword
+  mongo_config_server_2:
+    image: mongo
+    command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
     volumes:
-      - mongo-shard1-data:/data/db
-      - ../../config/mongo/mongodb-keyfile:/data/shard1/keyfile # Mount the keyfile
-    ports:
-      - "27018:27018"
+      - shard_c2:/data/db
     networks:
-      - swarmdb-network
+      - mongo-cluster
     deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == mongo-data-node-1 # Deploy Shard 1 on mongo-data-node-1
+      placement:
+        constraints: [node.hostname == mongo-config-node]
       restart_policy:
         condition: on-failure
 
-  # # MongoDB Shard 2
-  # mongo-shard2:
-  #   image: mongo:latest
-  #   container_name: mongo-shard2
-  #   entrypoint: >
-  #     bash -c "
-  #       mongod --shardsvr --replSet shardReplSet2 --bind_ip_all --keyFile /data/shard2/keyfile --port 27020 &&
-  #       sleep 15 &&
-  #       mongo --eval 'rs.initiate()' --username root --password rootPassword --host mongo-shard2:27020"
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=root
-  #     - MONGO_INITDB_ROOT_PASSWORD=rootPassword
-  #   volumes:
-  #     - mongo-shard2-data:/data/db
-  #     - ../../config/mongo/mongodb-keyfile:/data/shard2/keyfile # Mount the keyfile
-  #   ports:
-  #     - "27020:27020"
-  #   networks:
-  #     - swarmdb-network
-  #   deploy:
-  #     replicas: 1
-  #     # placement:
-  #     #   constraints:
-  #     #     - node.hostname == mongo-data-node-2 # Deploy Shard 2 on mongo-data-node-2
-  #     restart_policy:
-  #       condition: on-failure
+  mongo_config_server_3:
+    image: mongo
+    command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
+    volumes:
+      - shard_c3:/data/db
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
 
-  # # MongoDB Exporter for Config Server
-  # mongo-exporter-config:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-config
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-config:27019
-  #   ports:
-  #     - "9216:9216"
-  #   networks:
-  #     - swarmdb-network
-  #   depends_on:
-  #     - mongo-config
-  #   deploy:
-  #     replicas: 1
-  #     # placement:
-  #     #   constraints:
-  #     #     - node.hostname == mongo-config-node # Deploy Config exporter on mongo-config-node
-  #     restart_policy:
-  #       condition: on-failure
+  # Shard 1 Replica Set
+  mongo_shard_1_rep_1:
+    image: mongo
+    command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d11:/data/db
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_1_rep_2
+      - mongo_shard_1_rep_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-1]
+      restart_policy:
+        condition: on-failure
 
-  # # MongoDB Exporter for Mongos Router
-  # mongo-exporter-mongos:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-mongos
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongos-router:27017
-  #   ports:
-  #     - "9217:9217"
-  #   networks:
-  #     - swarmdb-network
-  #   depends_on:
-  #     - mongos-router
-  #   deploy:
-  #     replicas: 1
-  #     # placement:
-  #     #   constraints:
-  #     #     - node.hostname == mongo-config-node # Deploy Mongos exporter on mongo-config-node
-  #     restart_policy:
-  #       condition: on-failure
+  mongo_shard_1_rep_2:
+    image: mongo
+    command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d12:/data/db
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-2]
+      restart_policy:
+        condition: on-failure
 
-  # # MongoDB Exporter for Shard 1
-  # mongo-exporter-shard1:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard1
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard1:27018
-  #   ports:
-  #     - "9218:9218"
-  #   networks:
-  #     - swarmdb-network
-  #   depends_on:
-  #     - mongo-shard1
-  #   deploy:
-  #     replicas: 1
-  #     # placement:
-  #     #   constraints:
-  #     #     - node.hostname == mongo-data-node-1 # Deploy Shard 1 exporter on mongo-data-node-1
-  #     restart_policy:
-  #       condition: on-failure
+  mongo_shard_1_rep_3:
+    image: mongo
+    command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d13:/data/db
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-3]
+      restart_policy:
+        condition: on-failure
 
-  # # MongoDB Exporter for Shard 2
-  # mongo-exporter-shard2:
-  #   image: bitnami/mongodb-exporter:latest
-  #   container_name: mongo-exporter-shard2
-  #   environment:
-  #     - MONGODB_URI=mongodb://root:rootPassword@mongo-shard2:27020
-  #   ports:
-  #     - "9219:9219"
-  #   networks:
-  #     - swarmdb-network
-  #   depends_on:
-  #     - mongo-shard2
-  #   deploy:
-  #     replicas: 1
-  #     # placement:
-  #     #   constraints:
-  #     #     - node.hostname == mongo-data-node-2 # Deploy Shard 2 exporter on mongo-data-node-2
-  #     restart_policy:
-  #       condition: on-failure
+  # Shard 2 Replica Set
+  mongo_shard_2_rep_1:
+    image: mongo
+    command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d21:/data/db
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_2_rep_2
+      - mongo_shard_2_rep_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-1]
+      restart_policy:
+        condition: on-failure
 
-networks:
-  swarmdb-network:
-    driver: overlay # Overlay network to allow cross-host communication
+  mongo_shard_2_rep_2:
+    image: mongo
+    command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d22:/data/db
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-2]
+      restart_policy:
+        condition: on-failure
+
+  mongo_shard_2_rep_3:
+    image: mongo
+    command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    volumes:
+      - shard_d23:/data/db
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-3]
+      restart_policy:
+        condition: on-failure
+
+  # Mongos Router
+  mongo_router:
+    image: mongo
+    command: mongos --configdb cfg/mongo_config_server_1:27017,mongo_config_server_2:27017,mongo_config_server_3:27017 --port 27017 --bind_ip_all
+    ports:
+      - "27027:27017"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_config_server_1
+      - mongo_config_server_2
+      - mongo_config_server_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
+
+  # MongoDB Exporters for Config Servers
+  mongo_exporter_cfg_1:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_config_server_1:27017
+    ports:
+      - "9216:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_config_server_1
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_cfg_2:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_config_server_2:27017
+    ports:
+      - "9217:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_config_server_2
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_cfg_3:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_config_server_3:27017
+    ports:
+      - "9218:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_config_server_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
+
+  # MongoDB Exporters for Router
+  mongo_exporter_router:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_router:27017
+    ports:
+      - "9219:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_router
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node]
+      restart_policy:
+        condition: on-failure
+
+  # MongoDB Exporters for Shard 1
+  mongo_exporter_shard_1_rep_1:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_1_rep_1:27017
+    ports:
+      - "9220:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_1_rep_1
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-1]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_shard_1_rep_2:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_1_rep_2:27017
+    ports:
+      - "9221:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_1_rep_2
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-2]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_shard_1_rep_3:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_1_rep_3:27017
+    ports:
+      - "9222:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_1_rep_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-3]
+      restart_policy:
+        condition: on-failure
+
+  # MongoDB Exporters for Shard 2
+  mongo_exporter_shard_2_rep_1:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_2_rep_1:27017
+    ports:
+      - "9223:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_2_rep_1
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-1]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_shard_2_rep_2:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_2_rep_2:27017
+    ports:
+      - "9224:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_2_rep_2
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-2]
+      restart_policy:
+        condition: on-failure
+
+  mongo_exporter_shard_2_rep_3:
+    image: bitnami/mongodb-exporter
+    environment:
+      - MONGODB_URI=mongodb://mongo_shard_2_rep_3:27017
+    ports:
+      - "9225:9216"
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo_shard_2_rep_3
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-3]
+      restart_policy:
+        condition: on-failure
 
 volumes:
-  mongo-config-data:
-    driver: local
-  mongo-shard1-data:
-    driver: local
-  # mongo-shard2-data:
-  #   driver: local
+  shard_d11:
+  shard_d12:
+  shard_d13:
+  shard_d21:
+  shard_d22:
+  shard_d23:
+  shard_c1:
+  shard_c2:
+  shard_c3:
+
+networks:
+  mongo-cluster:
+    driver: overlay
