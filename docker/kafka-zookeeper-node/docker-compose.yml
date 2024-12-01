@@ -12,6 +12,7 @@ services:
     volumes:
       - ./data/zoo1/data:/var/lib/zookeeper/data
       - ./data/zoo1/datalog:/var/lib/zookeeper/log
+    restart: always
 
   kafka1:
     image: confluentinc/cp-kafka:7.3.2
@@ -41,6 +42,7 @@ services:
     volumes:
       - ./data/kafka1/data:/var/lib/kafka/data
       - ./data/kafka1/logs:/var/lib/kafka/logs
+    restart: always
 
 volumes:
   zoo1:

@@ -2,5 +2,5 @@ services:
   kafka-producer:
     build: .
     volumes:
-      - ./input_files:/app/input_files
-    restart: none
+      - /root/SwarmDB/test/input_files:/app/input_files
+    restart: always
