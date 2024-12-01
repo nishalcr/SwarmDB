@@ -1,0 +1,13 @@
+{
+  "kafka_server": "35.170.18.255:9092",
+  "watch_folder": "./input_files/",
+  "producer_config": {
+    "bootstrap.servers": "35.170.18.255:9092",
+    "client.id": "swarmdb-producer"
+  },
+  "topic_prefixes": {
+    "sensor_data": "sensor-data-topic",
+    "sensor_maintenance_data": "sensor-maintenance-topic",
+    "sensor_monitoring_logs": "sensor-monitoring-logs-topic"
+  }
+}

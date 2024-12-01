@@ -1,0 +1,29 @@
+{
+  "kafka": {
+    "bootstrap_servers": [
+      "boot-lt4slcxg.c3.kafka-serverless.us-east-1.amazonaws.com:9098"
+    ],
+     "security_protocol": "SSL",
+    "ssl": {
+      "ca_location": "/path/to/ca-cert",
+      "certificate_location": "/path/to/certificate",
+      "key_location": "/path/to/key"
+    },
+    "acks": "all",
+    "retries": 5,
+    "max_in_flight": 5
+  },
+  "file_watch": {
+    "data_path": "/path/to/your/data/files/",
+    "patterns": {
+      "sensor_data": "sensor_data_*.json",
+      "sensor_maintenance_data": "sensor_maintenance_data_*.json",
+      "sensor_monitoring_logs": "sensor_monitoring_logs_*.json"
+    }
+  },
+  "topics": {
+    "sensor_data": "sensor-data-topic",
+    "sensor_maintenance_data": "sensor-maintenance-topic",
+    "sensor_monitoring_logs": "sensor-monitoring-logs-topic"
+  }
+}

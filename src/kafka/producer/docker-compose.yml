@@ -1,0 +1,6 @@
+services:
+  kafka-producer:
+    build: .
+    volumes:
+      - ./input_files:/app/input_files
+    restart: none

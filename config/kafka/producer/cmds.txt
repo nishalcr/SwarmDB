@@ -1,0 +1,9 @@
+
+/bin/kafka-topics --create --topic sensor-data-topic --bootstrap-server kafka1:9092 --partitions 1 --replication-factor 1
+/bin/kafka-topics --create --topic sensor-maintenance-topic --bootstrap-server kafka1:9092 --partitions 1 --replication-factor 1
+/bin/kafka-topics --create --topic sensor-monitoring-logs-topic --bootstrap-server kafka1:9092 --partitions 1 --replication-factor 1
+
+
+
+
+/bin/kafka-console-consumer --bootstrap-server kafka1:9092 --consumer.config config.properties --topic ensor-data-topic --property "print.key=true"

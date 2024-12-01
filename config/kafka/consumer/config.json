@@ -1,0 +1,15 @@
+{
+  "kafka": {
+    "bootstrap_servers": [
+      "b-2.example-cluster-name.abcde.c6.kafka.us-west-2.amazonaws.com:9092"
+    ],
+    "group_id": "my-consumer-group",
+    "auto_offset_reset": "earliest",
+    "enable_auto_commit": false
+  },
+  "topics": {
+    "sensor_data": "sensor-data-topic",
+    "sensor_maintenance_data": "sensor-maintenance-topic",
+    "sensor_monitoring_logs": "sensor-monitoring-logs-topic"
+  }
+}

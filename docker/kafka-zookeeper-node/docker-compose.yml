@@ -1,95 +1,47 @@
 services:
-  # Zookeeper
-  zookeeper:
-    image: bitnami/zookeeper:latest
-    container_name: zookeeper
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes # Allow unauthenticated users to connect
+  zoo1:
+    image: confluentinc/cp-zookeeper:7.3.2
+    hostname: zoo1
+    container_name: zoo1
     ports:
-      - "2181:2181" # Zookeeper client port
-    networks:
-      - swarmdb-network
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zoo1:2888:3888
     volumes:
-      - zookeeper_data:/bitnami/zookeeper
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == kafka-node # Ensure this service runs on the zookeeper-node
-      restart_policy:
-        condition: on-failure # Restart only on failure
+      - ./data/zoo1/data:/var/lib/zookeeper/data
+      - ./data/zoo1/datalog:/var/lib/zookeeper/log
 
-  # Zookeeper Exporter
-  zookeeper-exporter:
-    image: dabealu/zookeeper-exporter:latest
-    container_name: zookeeper-exporter
-    environment:
-      - ZOOKEEPER_SERVERS=zookeeper:2181 # Address of the Zookeeper server
-      - ZOOKEEPER_EXPORTER_LOG_LEVEL=info
+  kafka1:
+    image: confluentinc/cp-kafka:7.3.2
+    hostname: kafka1
+    container_name: kafka1
     ports:
-      - "9141:9141" # Port for Prometheus to scrape metrics
-    depends_on:
-      - zookeeper
-    networks:
-      - swarmdb-network
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == kafka-node # Ensure this service runs on the zookeeper-node
-      restart_policy:
-        condition: on-failure # Restart only on failure
-
-  # Kafka
-  kafka:
-    image: bitnami/kafka:latest
-    container_name: kafka
+      - "9092:9092"
+      - "29092:29092"
+      - "9999:9999"
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 # Connect Kafka to Zookeeper
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 # Advertise Kafka on kafka-node
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - ALLOW_PLAINTEXT_LISTENER=yes # Allow plaintext connections
-      - KAFKA_HEAP_OPTS=-Xmx512M -Xms512M # Set the heap size
-    ports:
-      - "9092:9092" # Kafka broker port
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka1:19092,EXTERNAL://35.170.18.255:9092,DOCKER://host.docker.internal:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
     depends_on:
-      - zookeeper
-    networks:
-      - swarmdb-network
+      - zoo1
     volumes:
-      - kafka_data:/bitnami/kafka
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == kafka-node # Ensure this service runs on the kafka-node
-      restart_policy:
-        condition: on-failure # Restart only on failure
-
-  # Kafka Exporter
-  kafka-exporter:
-    image: bitnami/kafka-exporter:latest
-    container_name: kafka-exporter
-    environment:
-      - KAFKA_BROKER_SERVER=kafka:9092 # Address of the Kafka broker
-      - KAFKA_EXPORTER_LOG_LEVEL=info
-    ports:
-      - "9308:9308" # Port for Prometheus to scrape metrics
-    depends_on:
-      - kafka
-    networks:
-      - swarmdb-network
-    deploy:
-      placement:
-        constraints:
-          - node.hostname == kafka-node # Ensure this service runs on the kafka-node
-      restart_policy:
-        condition: on-failure # Restart only on failure
-
-networks:
-  swarmdb-network:
-    driver: overlay # Using an overlay network to connect across multiple nodes in Docker Swarm
+      - ./data/kafka1/data:/var/lib/kafka/data
+      - ./data/kafka1/logs:/var/lib/kafka/logs
 
 volumes:
-  zookeeper_data:
-    driver: local
-  kafka_data:
-    driver: local
+  zoo1:
+  kafka1:
