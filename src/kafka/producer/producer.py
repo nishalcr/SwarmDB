@@ -30,7 +30,7 @@ producer = Producer(producer_config)
 TOPIC_PREFIXES = config["topic_prefixes"]
 
 
-# Function to send messages to Kafka
+# Function to send messages to Kafka with proper JSON format
 def send_to_kafka(file_path, topic):
     print(f"Sending data to Kafka from {file_path} to topic {topic}")
     with open(file_path, "r") as f:
@@ -39,12 +39,20 @@ def send_to_kafka(file_path, topic):
             data = ndjson.load(f)
             print(f"Read {len(data)} records from {file_path}")
             for record in data:
-                # Send each record to the appropriate Kafka topic
-                producer.produce(topic, key=None, value=str(record).encode("utf-8"))
-                print(f"Sent record to {topic}: {record}")
+                try:
+                    # Convert the record to a JSON string
+                    json_record = json.dumps(record)
+
+                    # Send the record to Kafka (ensure it's UTF-8 encoded)
+                    producer.produce(topic, key=None, value=json_record.encode("utf-8"))
+                    print(f"Sent record to {topic}: {json_record}")
+
+                except Exception as e:
+                    print(f"Error sending record to Kafka: {e}")
 
             # Wait for any outstanding messages to be delivered
             producer.flush()
+
         except Exception as e:
             print(f"Error reading or sending data from {file_path}: {e}")
 

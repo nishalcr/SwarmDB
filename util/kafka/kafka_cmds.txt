@@ -18,6 +18,8 @@ CONSUMER:
 
 
 
+BUILD THE PRODUCER CODE:
+docker-compose -f src/kafka/producer/docker-compose.yml build
 
 START THE PRODUCER:
 docker-compose -f src/kafka/producer/docker-compose.yml up -d

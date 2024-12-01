@@ -32,6 +32,7 @@ def process_message(msg):
     """
     try:
         message_value = msg.value().decode("utf-8")  # Decode message
+        print(f"Received message: {message_value}")
         data = json.loads(message_value)
         logger.info(f"Processed message: {data}")
 
@@ -85,6 +86,7 @@ def main():
                 msg = consumer.poll(timeout=1.0)
 
                 if msg is None:  # No message available within timeout
+                    print("No message received...")
                     continue
                 if msg.error():  # Handle errors
                     if msg.error().code() == KafkaError._PARTITION_EOF:

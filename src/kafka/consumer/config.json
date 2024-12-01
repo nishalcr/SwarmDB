@@ -1,9 +1,7 @@
 {
   "kafka": {
-    "bootstrap_servers": [
-      "b-2.example-cluster-name.abcde.c6.kafka.us-west-2.amazonaws.com:9092"
-    ],
-    "group_id": "my-consumer-group",
+    "bootstrap_servers": "35.170.18.255:9092",
+    "group_id": "swarmdb-consumer-group",
     "auto_offset_reset": "earliest",
     "enable_auto_commit": false
   },
