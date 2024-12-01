@@ -1,13 +1,17 @@
 {
   "kafka": {
     "bootstrap_servers": "35.170.18.255:9092",
-    "group_id": "swarmdb-consumer-group",
+    "group_id": "my_consumer_group",
     "auto_offset_reset": "earliest",
     "enable_auto_commit": false
   },
-  "topics": {
-    "sensor_data": "sensor-data-topic",
-    "sensor_maintenance_data": "sensor-maintenance-topic",
-    "sensor_monitoring_logs": "sensor-monitoring-logs-topic"
+  "mongodb": {
+    "uri": "mongodb://localhost:27017",
+    "database": "sensor_data_db"
+  },
+  "topics_to_collection": {
+    "sensor-data-topic": "sensor_data_collection",
+    "sensor-maintenance-topic": "sensor_maintenance_collection",
+    "sensor-monitoring-logs-topic": "sensor_monitoring_logs_collection"
   }
 }
