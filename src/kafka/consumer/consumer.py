@@ -32,7 +32,7 @@ def process_message(msg):
     """
     try:
         message_value = msg.value().decode("utf-8")  # Decode message
-        print(f"Received message: {message_value}")
+        logger.info(f"Received message: {message_value}")
         data = json.loads(message_value)
         logger.info(f"Processed message: {data}")
 
