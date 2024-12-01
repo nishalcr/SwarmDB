@@ -14,7 +14,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == zookeeper-node # Ensure this service runs on the zookeeper-node
+          - node.hostname == kafka-node # Ensure this service runs on the zookeeper-node
       restart_policy:
         condition: on-failure # Restart only on failure
 
@@ -34,7 +34,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == zookeeper-node # Ensure this service runs on the zookeeper-node
+          - node.hostname == kafka-node # Ensure this service runs on the zookeeper-node
       restart_policy:
         condition: on-failure # Restart only on failure
 
@@ -45,9 +45,10 @@ services:
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181 # Connect Kafka to Zookeeper
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-node:9092 # Advertise Kafka on kafka-node
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092 # Advertise Kafka on kafka-node
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - ALLOW_PLAINTEXT_LISTENER=yes # Allow plaintext connections
+      - KAFKA_HEAP_OPTS=-Xmx512M -Xms512M # Set the heap size
     ports:
       - "9092:9092" # Kafka broker port
     depends_on:
