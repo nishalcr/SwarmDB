@@ -1,0 +1,50 @@
+services:
+  # Prometheus Service
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - prometheus-data:/prometheus # Volume for storing Prometheus data
+      - ../../config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml # Custom Prometheus config
+    ports:
+      - "9090:9090" # Prometheus web UI and /metrics endpoint
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == monitoring-node]
+      restart_policy:
+        condition: on-failure
+
+  # Grafana Service
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=dds_admin # Admin credentials for Grafana UI
+      - GF_SECURITY_ADMIN_PASSWORD=dds_bois # Admin password for Grafana UI
+      - GF_METRICS_ENABLED=true # Enable /metrics endpoint
+      - GF_METRICS_BASIC_AUTH_USER=metrics_user # Basic auth username for /metrics
+      - GF_METRICS_BASIC_AUTH_PASSWORD=metrics_password # Basic auth password for /metrics
+      - GF_USERS_ALLOW_SIGN_UP=false # Disable user sign up for added security
+    ports:
+      - "3000:3000" # Grafana web UI
+      - "3001:3001" # Grafana /metrics endpoint
+    depends_on:
+      - prometheus
+    networks:
+      - mongo-cluster
+    volumes:
+      - grafana-data:/var/lib/grafana # Volume for storing Grafana data
+      - ../../config/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml # Mount the datasources config file
+    deploy:
+      placement:
+        constraints: [node.hostname == monitoring-node]
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  grafana-data:
+  prometheus-data:
+
+networks:
+  mongo-cluster:
+    driver: overlay
