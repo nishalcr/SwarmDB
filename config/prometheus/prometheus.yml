@@ -1,0 +1,57 @@
+global:
+  scrape_interval: 15s # Default scrape interval for all targets
+  evaluation_interval: 15s # Default rule evaluation interval
+
+scrape_configs:
+  # Scrape the Prometheus container itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Scrape MongoDB Config Servers
+  - job_name: "mongodb-config-server-1"
+    static_configs:
+      - targets: ["172.31.82.46:9216"]
+
+  - job_name: "mongodb-config-server-2"
+    static_configs:
+      - targets: ["172.31.82.46:9217"]
+
+  - job_name: "mongodb-config-server-3"
+    static_configs:
+      - targets: ["172.31.82.46:9218"]
+
+  # Scrape MongoDB Router
+  - job_name: "mongodb-router"
+    static_configs:
+      - targets: ["172.31.82.46:9219"]
+
+  # Scrape MongoDB Shard Servers - Shard 1 Replica Set 1
+  - job_name: "mongodb-shard-1-rs-1"
+    static_configs:
+      - targets: ["172.31.80.84:9220"]
+
+  # Scrape MongoDB Shard Servers - Shard 1 Replica Set 2
+  - job_name: "mongodb-shard-1-rs-2"
+    static_configs:
+      - targets: ["172.31.90.96:9221"]
+
+  # Scrape MongoDB Shard Servers - Shard 1 Replica Set 3
+  - job_name: "mongodb-shard-1-rs-3"
+    static_configs:
+      - targets: ["172.31.88.202:9222"]
+
+  # Scrape MongoDB Shard Servers - Shard 2 Replica Set 1
+  - job_name: "mongodb-shard-2-rs-1"
+    static_configs:
+      - targets: ["172.31.80.84:9223"]
+
+  # Scrape MongoDB Shard Servers - Shard 2 Replica Set 2
+  - job_name: "mongodb-shard-2-rs-2"
+    static_configs:
+      - targets: ["172.31.90.96:9224"]
+
+  # Scrape MongoDB Shard Servers - Shard 2 Replica Set 3
+  - job_name: "mongodb-shard-2-rs-3"
+    static_configs:
+      - targets: ["172.31.88.202:9225"]
