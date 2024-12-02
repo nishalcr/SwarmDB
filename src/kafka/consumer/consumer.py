@@ -1,11 +1,16 @@
+import os
 import json
 import logging
 import sys
 from pymongo import MongoClient
 from confluent_kafka import Consumer, KafkaException, KafkaError
 
-# Configure logging for the application
-logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+
+log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
+logging.basicConfig(
+    format="%(asctime)s - %(levelname)s - %(message)s", level=log_levels.get(log_level, logging.INFO)
+)  # Default to INFO if invalid level
 logger = logging.getLogger(__name__)
 
 

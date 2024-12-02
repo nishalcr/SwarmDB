@@ -1,8 +1,9 @@
 # Use the official Python base image
 FROM python:3.9-slim
 
-# Set the environment variable to prevent buffering of Python output
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=WARNING
 
 # Set the working directory
 WORKDIR /app
