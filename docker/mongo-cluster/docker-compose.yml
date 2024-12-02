@@ -12,7 +12,7 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
@@ -25,7 +25,7 @@ services:
       - mongo-cluster
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
@@ -38,7 +38,7 @@ services:
       - mongo-cluster
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
@@ -142,7 +142,7 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
@@ -159,7 +159,7 @@ services:
       - mongo_config_server_1
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
@@ -175,7 +175,7 @@ services:
       - mongo_config_server_2
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
@@ -191,7 +191,7 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
@@ -208,7 +208,7 @@ services:
       - mongo_router
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
