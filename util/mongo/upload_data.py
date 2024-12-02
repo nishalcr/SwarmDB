@@ -5,11 +5,19 @@ from pymongo import MongoClient
 # MongoDB connection details
 MONGO_URI = "mongodb://52.71.233.218:27027/"  # Replace with your MongoDB URI
 DB_NAME = "iot_device_data"  # Replace with your database name
-COLLECTION_NAME = "sensor_monitoring_logs"  # Replace with your collection name
-INPUT_FILE = "/Users/nishalcr/Documents/Nishal/MS/Sem_3/CSE_512_DDS/Project/SwarmDB/data/sensor_monitoring_logs_main.ndjson"  # Path to the input NDJSON file
+
+# COLLECTION_NAME = "sensor_data"
+# INPUT_FILE = "/Users/nishalcr/Documents/Nishal/MS/Sem_3/CSE_512_DDS/Project/SwarmDB/data/sensor_data_500K.ndjson"
+
+# COLLECTION_NAME = "sensor_maintenance_data"
+# INPUT_FILE = "/Users/nishalcr/Documents/Nishal/MS/Sem_3/CSE_512_DDS/Project/SwarmDB/data/sensor_maintenance_data_500K.ndjson"
+
+
+COLLECTION_NAME = "sensor_monitoring_logs"
+INPUT_FILE = "/Users/nishalcr/Documents/Nishal/MS/Sem_3/CSE_512_DDS/Project/SwarmDB/data/sensor_monitoring_logs_500K.ndjson"
 
 # Batch size for bulk insert
-BATCH_SIZE = 10000  # Adjust based on your system's capability and the data size
+BATCH_SIZE = 500  # Adjust based on your system's capability and the data size
 
 
 def get_mongo_client(uri):
@@ -32,7 +40,7 @@ def bulk_insert_to_mongo(collection, data_batch):
         # Bulk insert the batch of data into the MongoDB collection
         if data_batch:
             collection.insert_many(data_batch)
-            print(f"Inserted {len(data_batch)} records into MongoDB")
+            # print(f"Inserted {len(data_batch)} records into MongoDB")
     except Exception as e:
         print(f"Error during bulk insert into MongoDB: {e}")
 
@@ -59,7 +67,8 @@ def process_ndjson(input_file, collection):
                 if len(data_batch) >= BATCH_SIZE:
                     bulk_insert_to_mongo(collection, data_batch)
                     data_batch = []  # Reset the batch after insertion
-
+                
+                print(f"total records inserted: {line_number}")
             except json.JSONDecodeError as e:
                 print(f"Skipping invalid JSON line at line {line_number}: {e}")
                 continue

@@ -65,3 +65,38 @@ scrape_configs:
   - job_name: "zookeeper"
     static_configs:
       - targets: ["172.31.30.196:9141"]
+
+  # Scrape Dev Admin Node:
+  - job_name: "dev-admin-node"
+    static_configs:
+      - targets: ["172.31.87.106:9100"]
+
+  # Scrape Kafka Node:
+  - job_name: "kafka-node"
+    static_configs:
+      - targets: ["172.31.30.196:9100"]
+
+  # Scrape Mongo Config Node - 1:
+  - job_name: "mongo-config-node-1"
+    static_configs:
+      - targets: ["172.31.82.46:9100"]
+
+  # Scrape Mongo Config Node - 2:
+  - job_name: "mongo-config-node-2"
+    static_configs:
+      - targets: ["172.31.28.120:9100"]
+
+  # Scrape Mongo Data Node - 1:
+  - job_name: "mongo-data-node-1"
+    static_configs:
+      - targets: ["172.31.80.84:9100"]
+
+  # Scrape Mongo Data Node - 2:
+  - job_name: "mongo-data-node-2"
+    static_configs:
+      - targets: ["172.31.90.96:9100"]
+
+  # Scrape Mongo Data Node - 3:
+  - job_name: "mongo-data-node-3"
+    static_configs:
+      - targets: ["172.31.88.202:9100"]
