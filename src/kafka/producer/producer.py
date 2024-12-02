@@ -7,25 +7,39 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import logging
 
+# Set the log level based on environment variable, default to WARNING if not set
 log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
-log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
+log_levels = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL,
+}
 logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(message)s", level=log_levels.get(log_level, logging.INFO)
-)  # Default to INFO if invalid level
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    level=log_levels.get(log_level, logging.INFO),  # Default to INFO if invalid level
+)
 logger = logging.getLogger(__name__)
 
 
 # Load configuration from the config.json file
 def load_config(config_file="config.json"):
-    with open(config_file, "r") as file:
-        return json.load(file)
+    logger.debug(f"Loading configuration from {config_file}...")
+    try:
+        with open(config_file, "r") as file:
+            config = json.load(file)
+        logger.debug(f"Configuration loaded successfully: {config}")
+        return config
+    except Exception as e:
+        logger.critical(f"Failed to load config file {config_file}: {e}")
+        raise  # Re-raise to stop execution if config loading fails
 
 
 logger.info("Starting Kafka producer script")
 logger.info("Loading configuration from config.json...")
 config = load_config()
 logger.info("Configuration loaded successfully")
-logger.debug(f"Loaded configuration: {config}")
 
 KAFKA_SERVER = config["kafka_server"]  # Kafka external IP and port
 WATCH_FOLDER = config["watch_folder"]
@@ -104,6 +118,7 @@ def start_watching():
     observer.start()
 
     logger.info(f"Started watching for new NDJSON files in directory: {WATCH_FOLDER}")
+    logger.warning(f"Watching folder '{WATCH_FOLDER}' for new files. Please ensure the folder is populated with valid NDJSON files.")
     try:
         while True:
             time.sleep(1)
@@ -112,6 +127,7 @@ def start_watching():
         observer.stop()
     observer.join()
     logger.info("File watcher stopped")
+    logger.warning("No new files detected. Ensure that new NDJSON files are placed in the watch folder.")
 
 
 if __name__ == "__main__":

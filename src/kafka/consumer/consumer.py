@@ -5,9 +5,15 @@ import sys
 from pymongo import MongoClient
 from confluent_kafka import Consumer, KafkaException, KafkaError
 
-
+# Set log level based on environment variable, default to WARNING
 log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
-log_levels = {"DEBUG": logging.DEBUG, "INFO": logging.INFO, "WARNING": logging.WARNING, "ERROR": logging.ERROR, "CRITICAL": logging.CRITICAL}
+log_levels = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL,
+}
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s", level=log_levels.get(log_level, logging.INFO)
 )  # Default to INFO if invalid level
@@ -114,6 +120,10 @@ def main():
         topics = list(topics_to_collection.keys())
         consumer.subscribe(topics)  # Subscribe to all topics listed in config
         logger.info(f"Subscribed to topics: {', '.join(topics)}")
+
+        # Check if no topics are configured
+        if not topics:
+            logger.warning("No Kafka topics are configured to be subscribed to. Please check the config.")
 
         # Loop to consume messages from Kafka
         while True:
