@@ -44,6 +44,26 @@ services:
       - ./data/kafka1/logs:/var/lib/kafka/logs
     restart: always
 
+  # Confluent Zookeeper Exporter for Prometheus
+  zoo_exporter:
+    image: confluentinc/cp-zookeeper-exporter:latest
+    container_name: zoo_exporter
+    ports:
+      - "9141:9141" # Exposing metrics port for Prometheus
+    environment:
+      ZOOKEEPER_URI: "zoo1:2181" # Connect to your Zookeeper container
+    restart: always
+
+  # Confluent Kafka Exporter for Prometheus
+  kafka_exporter:
+    image: confluentinc/cp-kafka-exporter:latest
+    container_name: kafka_exporter
+    ports:
+      - "7071:7071" # Exposing metrics port for Prometheus
+    environment:
+      KAFKA_SERVER: "kafka1:9092" # Connect to your Kafka container
+    restart: always
+
 volumes:
   zoo1:
   kafka1:
