@@ -15,11 +15,11 @@ scrape_configs:
 
   - job_name: "mongodb-config-server-2"
     static_configs:
-      - targets: ["172.31.82.46:9217"]
+      - targets: ["172.31.28.120:9217"]
 
   - job_name: "mongodb-config-server-3"
     static_configs:
-      - targets: ["172.31.82.46:9218"]
+      - targets: ["172.31.28.120:9218"]
 
   # Scrape MongoDB Router
   - job_name: "mongodb-router"
@@ -55,3 +55,13 @@ scrape_configs:
   - job_name: "mongodb-shard-2-rs-3"
     static_configs:
       - targets: ["172.31.88.202:9225"]
+
+  # Scrape Kafka Brokers
+  - job_name: "kafka-broker-1"
+    static_configs:
+      - targets: ["172.31.30.196:9308"]
+
+  # Scrape Zookeeper
+  - job_name: "zookeeper"
+    static_configs:
+      - targets: ["172.31.30.196:9141"]
