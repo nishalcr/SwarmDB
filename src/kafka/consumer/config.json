@@ -6,12 +6,12 @@
     "enable_auto_commit": false
   },
   "mongodb": {
-    "uri": "mongodb://localhost:27017",
+    "uri": "mongodb://52.71.233.218:27027",
     "database": "sensor_data_db"
   },
   "topics_to_collection": {
-    "sensor-data-topic": "sensor_data_collection",
-    "sensor-maintenance-topic": "sensor_maintenance_collection",
-    "sensor-monitoring-logs-topic": "sensor_monitoring_logs_collection"
+    "sensor-data-topic": "sensor_data",
+    "sensor-maintenance-topic": "sensor_maintenance_data",
+    "sensor-monitoring-logs-topic": "sensor_monitoring_logs"
   }
 }
