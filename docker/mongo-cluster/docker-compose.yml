@@ -148,7 +148,7 @@ services:
 
   # MongoDB Exporters for Config Servers
   mongo_exporter_cfg_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_1:27017
     ports:
@@ -164,7 +164,7 @@ services:
         condition: on-failure
 
   mongo_exporter_cfg_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_2:27017
     ports:
@@ -180,7 +180,7 @@ services:
         condition: on-failure
 
   mongo_exporter_cfg_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_3:27017
     ports:
@@ -197,7 +197,7 @@ services:
 
   # MongoDB Exporters for Router
   mongo_exporter_router:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_router:27017
     ports:
@@ -214,7 +214,7 @@ services:
 
   # MongoDB Exporters for Shard 1
   mongo_exporter_shard_1_rep_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_1:27017
     ports:
@@ -230,7 +230,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_1_rep_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_2:27017
     ports:
@@ -246,7 +246,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_1_rep_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_3:27017
     ports:
@@ -263,7 +263,7 @@ services:
 
   # MongoDB Exporters for Shard 2
   mongo_exporter_shard_2_rep_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_1:27017
     ports:
@@ -279,7 +279,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_2_rep_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_2:27017
     ports:
@@ -295,7 +295,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_2_rep_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_3:27017
     ports:
@@ -309,7 +309,6 @@ services:
         constraints: [node.hostname == mongo-data-node-3]
       restart_policy:
         condition: on-failure
-
 
 volumes:
   shard_d11:
