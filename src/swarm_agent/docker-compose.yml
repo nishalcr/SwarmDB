@@ -1,0 +1,8 @@
+services:
+  swarm-agent:
+    build: .
+    restart: always
+
+networks:
+  monitoring:
+    driver: bridge

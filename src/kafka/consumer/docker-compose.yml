@@ -1,0 +1,16 @@
+services:
+  kafka-consumer:
+    build: .
+    restart: always
+
+  # Node Exporter to monitor host system
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "9100:9100" # Exposes metrics on port 9100
+
+networks:
+  monitoring:
+    driver: bridge

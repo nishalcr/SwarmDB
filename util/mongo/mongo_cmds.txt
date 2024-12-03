@@ -1,0 +1,8 @@
+docker exec -it mongo_cluster_mongo_router.1.3qnbkas0dc805eez44ny2od2t  mongosh
+
+
+## LOAD DATA TO DOCKER CONTAINER
+docker cp insert_device_metadata.js ebf3a61cff9f:/tmp/insert_device_metadata.js
+
+load('/tmp/insert_device_metadata.js');
+

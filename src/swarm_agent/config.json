@@ -1,0 +1,11 @@
+{
+  "prometheus_endpoint": "http://50.19.127.245:9090/api/v1/query",
+  "shards": ["mongodb-shard-1-rs-1", "mongodb-shard-1-rs-2", "mongodb-shard-1-rs-3", "mongodb-shard-2-rs-1", "mongodb-shard-2-rs-2", "mongodb-shard-2-rs-3"],
+  "max_iterations": 50,
+  "evaporation_rate": 0.1,
+  "alpha": 1,
+  "beta": 2,
+  "db_name": "iot_device_data",
+  "collections": ["sensor_data", "sensor_maintenance_data", "sensor_monitoring_logs"],
+  "mongodb_uri": "mongodb://52.71.233.218:27027"
+}

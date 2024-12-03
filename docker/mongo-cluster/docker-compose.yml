@@ -2,7 +2,13 @@ services:
   # Config Server Replica Set
   mongo_config_server_1:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_c1:/data/db
     networks:
@@ -12,40 +18,58 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
   mongo_config_server_2:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_c2:/data/db
     networks:
       - mongo-cluster
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
   mongo_config_server_3:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --configsvr --replSet cfg --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_c3:/data/db
     networks:
       - mongo-cluster
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
   # Shard 1 Replica Set
   mongo_shard_1_rep_1:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d11:/data/db
     networks:
@@ -61,7 +85,13 @@ services:
 
   mongo_shard_1_rep_2:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d12:/data/db
     networks:
@@ -74,7 +104,13 @@ services:
 
   mongo_shard_1_rep_3:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard1 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d13:/data/db
     networks:
@@ -88,7 +124,13 @@ services:
   # Shard 2 Replica Set
   mongo_shard_2_rep_1:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d21:/data/db
     networks:
@@ -104,7 +146,13 @@ services:
 
   mongo_shard_2_rep_2:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d22:/data/db
     networks:
@@ -117,7 +165,13 @@ services:
 
   mongo_shard_2_rep_3:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongod --shardsvr --replSet shard2 --dbpath /data/db --port 27017
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     volumes:
       - shard_d23:/data/db
     networks:
@@ -131,7 +185,13 @@ services:
   # Mongos Router
   mongo_router:
     image: mongo
+    environment:
+      - GLIBC_TUNABLES=glibc.pthread.rseq=0
     command: mongos --configdb cfg/mongo_config_server_1:27017,mongo_config_server_2:27017,mongo_config_server_3:27017 --port 27017 --bind_ip_all
+    ulimits:
+      nofile:
+        soft: 64000
+        hard: 64000
     ports:
       - "27027:27017"
     networks:
@@ -142,13 +202,13 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
   # MongoDB Exporters for Config Servers
   mongo_exporter_cfg_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_1:27017
     ports:
@@ -159,12 +219,12 @@ services:
       - mongo_config_server_1
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
   mongo_exporter_cfg_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_2:27017
     ports:
@@ -175,12 +235,12 @@ services:
       - mongo_config_server_2
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
   mongo_exporter_cfg_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_config_server_3:27017
     ports:
@@ -191,13 +251,13 @@ services:
       - mongo_config_server_3
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-2]
       restart_policy:
         condition: on-failure
 
   # MongoDB Exporters for Router
   mongo_exporter_router:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_router:27017
     ports:
@@ -208,13 +268,13 @@ services:
       - mongo_router
     deploy:
       placement:
-        constraints: [node.hostname == mongo-config-node]
+        constraints: [node.hostname == mongo-config-node-1]
       restart_policy:
         condition: on-failure
 
   # MongoDB Exporters for Shard 1
   mongo_exporter_shard_1_rep_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_1:27017
     ports:
@@ -230,7 +290,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_1_rep_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_2:27017
     ports:
@@ -246,7 +306,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_1_rep_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_1_rep_3:27017
     ports:
@@ -263,7 +323,7 @@ services:
 
   # MongoDB Exporters for Shard 2
   mongo_exporter_shard_2_rep_1:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_1:27017
     ports:
@@ -279,7 +339,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_2_rep_2:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_2:27017
     ports:
@@ -295,7 +355,7 @@ services:
         condition: on-failure
 
   mongo_exporter_shard_2_rep_3:
-    image: bitnami/mongodb-exporter
+    image: percona/mongodb_exporter:0.42.0
     environment:
       - MONGODB_URI=mongodb://mongo_shard_2_rep_3:27017
     ports:
@@ -310,6 +370,70 @@ services:
       restart_policy:
         condition: on-failure
 
+  # Node Exporter for Config Node 1
+  node_exporter_cfg_1:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node-1]
+      restart_policy:
+        condition: on-failure
+
+  # Node Exporter for Config Node 2
+  node_exporter_cfg_2:
+    image: prom/node-exporter:latest
+    ports:
+      - "9101:9100"
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-config-node-2]
+      restart_policy:
+        condition: on-failure
+
+  # Node Exporter for Data Node 1
+  node_exporter_data_1:
+    image: prom/node-exporter:latest
+    ports:
+      - "9102:9100"
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-1]
+      restart_policy:
+        condition: on-failure
+
+  # Node Exporter for Data Node 2
+  node_exporter_data_2:
+    image: prom/node-exporter:latest
+    ports:
+      - "9103:9100"
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-2]
+      restart_policy:
+        condition: on-failure
+
+  # Node Exporter for Data Node 3
+  node_exporter_data_3:
+    image: prom/node-exporter:latest
+    ports:
+      - "9104:9100"
+    networks:
+      - mongo-cluster
+    deploy:
+      placement:
+        constraints: [node.hostname == mongo-data-node-3]
+      restart_policy:
+        condition: on-failure
 
 volumes:
   shard_d11:

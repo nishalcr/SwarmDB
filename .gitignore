@@ -1,6 +1,3 @@
 **/.DS_Store
 *.pem
-data/device_metadata.json
-data/sensor_data.json
-data/sensor_maintenance_data.json
-data/sensor_monitoring_logs.json
+**/*.ndjson
