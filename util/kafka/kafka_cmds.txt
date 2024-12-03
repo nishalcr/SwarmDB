@@ -34,3 +34,7 @@ docker-compose -f src/kafka/consumer/docker-compose.yml build
 
 START THE CONSUMER:
 docker-compose -f src/kafka/consumer/docker-compose.yml up -d
+
+
+START THE SWARM AGENTS:
+docker-compose -f src/swarm_agent/docker-compose.yml up -d
