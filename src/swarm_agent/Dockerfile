@@ -14,7 +14,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the Python script into the container
-COPY consumer.py /app/
+COPY swarm_agent.py /app/
 
 # Copy the Python config into the container
 COPY config.json /app/
